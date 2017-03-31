@@ -10,5 +10,4 @@ add_executable(bigint
 
 add_executable(Rational
         Rational/main.cpp
-        Rational/Rational.cpp
-        Rational/Rational.h)
+        )
