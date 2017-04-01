@@ -11,3 +11,8 @@ add_executable(bigint
 add_executable(Rational
         Rational/main.cpp
         )
+
+add_executable(Geometry
+        Geometry/main.cpp
+        Geometry/geometry.cpp
+        Geometry/geometry.h)
