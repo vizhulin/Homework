@@ -15,26 +15,34 @@ RationalDivisionByZero::RationalDivisionByZero() : logic_error("Division by zero
 
 class Rational {
 private:
-    int nominator;
+    int numerator;
     int denominator;
 
     void assign(const char *);
 
-    void reduce() {
-        int a = abs(nominator);
+    int nod() {
+        int a = abs(numerator);
         int b = abs(denominator);
         while (b) {
             a = a % b;
             swap(a, b);
         }
-        nominator /= a;
+        return a;
+    };
+
+    void reduce() {
+        int sign = 1;
+        if (numerator * denominator < 0)
+            sign = -1;
+        int a = nod();
+        numerator = abs(numerator) / a * sign;
         denominator /= a;
     }
 
 public:
     Rational();
 
-    Rational(const int &, const int &);
+    Rational(const int &, const int & = 1);
 
     Rational(const Rational &);
 
@@ -140,22 +148,18 @@ public:
 };
 
 Rational::Rational() {
-    this->nominator = 0;
+    this->numerator = 0;
     this->denominator = 1;
 }
 
 Rational::Rational(const int &nominator, const int &denominator) {
-    int sign = 1;
-    if (nominator * denominator < 0)
-        sign = -1;
-
-    this->nominator = abs(nominator) * sign;
-    this->denominator = abs(denominator);
+    this->numerator = nominator;
+    this->denominator = denominator;
     this->reduce();
 }
 
 Rational::Rational(const Rational &that) {
-    this->nominator = that.nominator;
+    this->numerator = that.numerator;
     this->denominator = that.denominator;
 }
 
@@ -183,13 +187,13 @@ void Rational::assign(const char *string) {
         }
     }
 
-    this->nominator = p;
+    this->numerator = p;
     this->denominator = q;
 }
 
 
 int Rational::getNumerator() const {
-    return this->nominator;
+    return this->numerator;
 }
 
 int Rational::getDenominator() const {
@@ -205,92 +209,88 @@ istream &operator>>(istream &in, Rational &value) {
 
 ostream &operator<<(ostream &out, const Rational &value) {
     if (value.denominator == 1) {
-        out << value.nominator;
+        out << value.numerator;
     } else {
-        out << value.nominator << '/' << value.denominator;
+        out << value.numerator << '/' << value.denominator;
     }
     return out;
 }
 
 Rational operator+(const Rational &a, const Rational &b) {
     Rational res;
-    res.nominator = a.nominator * b.denominator + a.denominator * b.nominator;
+    res.numerator = a.numerator * b.denominator + a.denominator * b.numerator;
     res.denominator = a.denominator * b.denominator;
     res.reduce();
     return res;
 }
 
 Rational operator+(const Rational &a, const int &b) {
-    return a + Rational(b, 1);
+    return a + Rational(b);
 }
 
 Rational operator+(const int &a, const Rational &b) {
-    return Rational(a, 1) + b;
+    return Rational(a) + b;
 }
 
 Rational operator-(const Rational &a, const Rational &b) {
     Rational res;
-    res.nominator = a.nominator * b.denominator - a.denominator * b.nominator;
+    res.numerator = a.numerator * b.denominator - a.denominator * b.numerator;
     res.denominator = a.denominator * b.denominator;
     res.reduce();
     return res;
 }
 
 Rational operator-(const Rational &a, const int &b) {
-    return a - Rational(b, 1);
+    return a - Rational(b);
 }
 
 Rational operator-(const int &a, const Rational &b) {
-    return Rational(a, 1) - b;
+    return Rational(a) - b;
 }
 
 Rational operator*(const Rational &a, const Rational &b) {
     Rational res;
-    res.nominator = a.nominator * b.nominator;
+    res.numerator = a.numerator * b.numerator;
     res.denominator = a.denominator * b.denominator;
     res.reduce();
     return res;
 }
 
 Rational operator*(const Rational &a, const int &b) {
-    return a * Rational(b, 1);
+    return a * Rational(b);
 }
 
 Rational operator*(const int &a, const Rational &b) {
-    return Rational(a, 1) * b;
+    return Rational(a) * b;
 }
 
 Rational operator/(const Rational &a, const Rational &b) {
-    if (b.nominator == 0) {
+    if (b.numerator == 0) {
         throw RationalDivisionByZero();
     }
     Rational res;
-    int sign = 1;
-    if (a.nominator * b.nominator < 0) {
-        sign = -1;
-    }
-    res.nominator = abs(a.nominator * b.denominator) * sign;
-    res.denominator = abs(a.denominator * b.nominator);
+    res.numerator = abs(a.numerator * b.denominator);
+    res.denominator = abs(a.denominator * b.numerator);
     res.reduce();
     return res;
 }
 
 Rational operator/(const Rational &a, const int &b) {
-    return a / Rational(b, 1);
+    return a / Rational(b);
 }
 
 Rational operator/(const int &a, const Rational &b) {
-    return Rational(a, 1) / b;
+    return Rational(a) / b;
 }
 
 Rational &Rational::operator=(const Rational &that) {
-    this->nominator = that.nominator;
+    this->numerator = that.numerator;
     this->denominator = that.denominator;
     return *this;
 }
 
 Rational &Rational::operator=(const int &that) {
-    this->nominator = that;
+    this->numerator = that;
     this->denominator = 1;
     return *this;
 }
@@ -300,7 +300,7 @@ Rational &Rational::operator+=(const Rational &that) {
 }
 
 Rational &Rational::operator+=(const int &that) {
-    return *this = *this + Rational(that, 1);
+    return *this = *this + Rational(that);
 }
 
 Rational &Rational::operator-=(const Rational &that) {
@@ -308,7 +308,7 @@ Rational &Rational::operator-=(const Rational &that) {
 }
 
 Rational &Rational::operator-=(const int &that) {
-    return *this = *this - Rational(that, 1);
+    return *this = *this - Rational(that);
 }
 
 Rational &Rational::operator*=(const Rational &that) {
@@ -316,7 +316,7 @@ Rational &Rational::operator*=(const Rational &that) {
 }
 
 Rational &Rational::operator*=(const int &that) {
-    return *this = *this * Rational(that, 1);
+    return *this = *this * Rational(that);
 }
 
 Rational &Rational::operator/=(const Rational &that) {
@@ -324,39 +324,31 @@ Rational &Rational::operator/=(const Rational &that) {
 }
 
 Rational &Rational::operator/=(const int &that) {
-    return *this = *this / Rational(that, 1);
+    return *this = *this / Rational(that);
 }
 
 bool operator>(const Rational &a, const Rational &b) {
-    if (a.nominator * b.denominator > a.denominator * b.nominator) {
-        return true;
-    } else if (a.nominator * b.denominator == a.denominator * b.nominator) {
-        return false;
-    } else
-        return false;
+    return (a - b).numerator > 0;
 }
 
 bool operator>(const int &a, const Rational &b) {
-    return Rational(a, 1) > b;
+    return Rational(a) > b;
 }
 
 bool operator>(const Rational &a, const int &b) {
-    return a > Rational(b, 1);
+    return a > Rational(b);
 }
 
 bool operator>=(const Rational &a, const Rational &b) {
-    if (a > b || a == b)
-        return true;
-    else
-        return false;
+    return (a - b).numerator >= 0;
 }
 
 bool operator>=(const int &a, const Rational &b) {
-    return Rational(a, 1) >= b;
+    return Rational(a) >= b;
 }
 
 bool operator>=(const Rational &a, const int &b) {
-    return a >= Rational(b, 1);
+    return a >= Rational(b);
 }
 
 bool operator<(const Rational &a, const Rational &b) {
@@ -364,41 +356,35 @@ bool operator<(const Rational &a, const Rational &b) {
 }
 
 bool operator<(const int &a, const Rational &b) {
-    return Rational(a, 1) < b;
+    return Rational(a) < b;
 }
 
 bool operator<(const Rational &a, const int &b) {
-    return a < Rational(b, 1);
+    return a < Rational(b);
 }
 
 bool operator<=(const Rational &a, const Rational &b) {
-    if (a == b || a < b)
-        return true;
-    else
-        return false;
+    return (a - b).numerator <= 0;
 }
 
 bool operator<=(const int &a, const Rational &b) {
-    return Rational(a, 1) <= b;
+    return Rational(a) <= b;
 }
 
 bool operator<=(const Rational &a, const int &b) {
-    return a <= Rational(b, 1);
+    return a <= Rational(b);
 }
 
 bool operator==(const Rational &a, const Rational &b) {
-    if (a.nominator == b.nominator && a.denominator == b.denominator)
-        return true;
-    else
-        return false;
+    return (a - b).numerator == 0;
 }
 
 bool operator==(const int &a, const Rational &b) {
-    return Rational(a, 1) == b;
+    return Rational(a) == b;
 }
 
 bool operator==(const Rational &a, const int &b) {
-    return a == Rational(b, 1);
+    return a == Rational(b);
 }
 
 bool operator!=(const Rational &a, const Rational &b) {
@@ -406,26 +392,25 @@ bool operator!=(const Rational &a, const Rational &b) {
 }
 
 bool operator!=(const int &a, const Rational &b) {
-    return Rational(a, 1) != b;
+    return Rational(a) != b;
 }
 
 bool operator!=(const Rational &a, const int &b) {
-    return a != Rational(b, 1);
+    return a != Rational(b);
 }
 
 Rational operator-(const Rational &that) {
     Rational res(that);
-    res.nominator *= -1;
+    res.numerator *= -1;
     return res;
 }
 
 Rational operator+(const Rational &that) {
-    Rational res(that);
-    return res;
+    return Rational(that);
 }
 
 Rational &Rational::operator++() {
-    this->nominator += this->denominator;
+    this->numerator += this->denominator;
     return *this;
 }
 
@@ -436,7 +421,7 @@ Rational Rational::operator++(int notused) {
 }
 
 Rational &Rational::operator--() {
-    this->nominator -= this->denominator;
+    this->numerator -= this->denominator;
     return *this;
 }
 
