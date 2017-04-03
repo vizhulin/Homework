@@ -16,3 +16,7 @@ add_executable(Geometry
         Geometry/main.cpp
         Geometry/geometry.cpp
         Geometry/geometry.h)
+
+add_executable(Matrix
+        Matrix/main.cpp
+        )
